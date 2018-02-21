@@ -18,17 +18,18 @@ def buildTrainDevTestSet():
 			with open(filepath, 'rb') as csvfile:
 				reader = csv.DictReader(csvfile)
 				for example in reader:
-					y = example['percent_fresh'] + ' '
-					x = example['title'] + ' ' + example['genre'] + ' ' + example['description']	# treat all as bag of words-TODO: separate features
-					x = " ".join(re.findall(r"[\w']+|[.,!?;]",x)).lower()	# split out punctuation
-					line = y + ' ' + x +'\n'
-					r = random.random()
-					if r < train_random:
-						trainFile.write(line)
-					elif r < dev_random:
-						devFile.write(line)
-					else:
-						testFile.write(line)
+					if example['percent_fresh']:
+						y = example['percent_fresh'] + ' '
+						x = example['title'] + ' ' + example['genre'] + ' ' + example['description']	# treat all as bag of words-TODO: separate features
+						x = " ".join(re.findall(r"[\w']+|[.,!?;]",x)).lower()	# split out punctuation
+						line = y + ' ' + x +'\n'
+						r = random.random()
+						if r < train_random:
+							trainFile.write(line)
+						elif r < dev_random:
+							devFile.write(line)
+						else:
+							testFile.write(line)
 
 
 buildTrainDevTestSet()
