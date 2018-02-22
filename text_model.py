@@ -43,11 +43,12 @@ def trainPredictor(trainExamples):
 	regr = LinearRegression()
 	regr.fit(trainX, trainY)
 	trainPredict = regr.predict(trainX)
+	print "hello"
 
 	print "coefficient of acoustic", regr.coef_
 	print "TRAIN Mean squared error", mean_squared_error(trainY, trainPredict)
 	print "TRAIN Variance score", r2_score(trainY, trainPredict)
-
+	"""
 
 	devX, _, _ = fitModel(devExamples, vocab=vocabulary, frequent_ngram_col_idx=frequent_ngram_col_idx)
 	devY = [y for x,y in devExamples]
@@ -56,7 +57,7 @@ def trainPredictor(trainExamples):
 	print "DEV Variance score", r2_score(devY, devPredict)
 
 
-
+	"""
 	return vocabulary, frequent_ngram_col_idx, regr
 
 

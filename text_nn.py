@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import math
 import keras
+import pickle
 from keras.regularizers import l2
 from keras.models import Sequential
 from keras.layers import Dense, Activation
@@ -32,14 +33,14 @@ def train_run_nn():
         model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
 
         # Fit the model
-        model.fit(trainX.values, trainY.values, epochs=50, batch_size=None)
+        model.fit(trainX, trainY, epochs=50, batch_size=None)
 
         # Test on dev
-        train_error = model.evaluate(trainX.values, trainY)
+        train_error = model.evaluate(trainX, trainY)
         print(train_error)
-        dev_error = model.evaluate(devX.values, devY)
+        dev_error = model.evaluate(devX, devY)
         print(dev_error)
 
-        dev_predictions = model.predict(devX.values)
+        dev_predictions = model.predict(devX)
 
 train_run_nn()
