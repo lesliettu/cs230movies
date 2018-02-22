@@ -22,18 +22,17 @@ def train_run_nn():
         NUM_VARIABLES = np.shape(trainX)[1] 
 
         model = Sequential()
-        model.add(Dense(200, input_dim=NUM_VARIABLES, activation='relu')) #, W_regularizer=l2(0.5))) 
-        model.add(keras.layers.core.Dropout(0.7))
-        model.add(Dense(200, activation='relu'))
-        # model.add(keras.layers.core.Dropout(0.7))
-        # model.add(Dense(math.floor(NUM_VARIABLES/4), activation='relu'))
-        # model.add(Dense(math.floor(NUM_VARIABLES/6), activation='relu'))
+        model.add(Dense(100, input_dim=NUM_VARIABLES, activation='relu')) #, W_regularizer=l2(0.5))) 
+        #model.add(keras.layers.core.Dropout(0.7))
+        model.add(Dense(100, activation='relu'))
+        model.add(Dense(100, activation='relu'))
+        model.add(Dense(100, activation='relu'))
         model.add(Dense(1, activation='relu'))
 
-        model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+        model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
 
         # Fit the model
-        model.fit(trainX.values, trainY.values, epochs=50, batch_size=1000)
+        model.fit(trainX.values, trainY.values, epochs=50, batch_size=None)
 
         # Test on dev
         train_error = model.evaluate(trainX.values, trainY)
