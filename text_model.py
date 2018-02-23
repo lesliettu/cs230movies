@@ -18,9 +18,9 @@ freq_threshold = 2
 
 '''
 	Input: 
-		-list of examples with tuples (bag of words, percent_fresh)
-		-vocab that is None if this is train set otherwise use vocab returned from extractFeatures on train examples
-		-frequent_ngram_col_idx None for train set otherwise list of column idices corresponding to words that pass the frequency threshold
+		-list of examples with tuples in the form (bag of words, percent_fresh)
+		-vocab that is None if this is train set otherwise use vocab returned from extractFeatures(train examples)
+		-frequent_ngram_col_idx None for train set otherwise list of column indices corresponding to ngrams that pass the frequency threshold
 
 	Vectorizes each example and transforms bag of words into frequencies of words in vocabulary
 '''
@@ -42,10 +42,18 @@ def extractFeatures(examples, vocab=None, frequent_ngram_col_idx=None):
 	fullfeature = fullfeature[:,frequent_ngram_col_idx[0]]
 	print('NEW SHAPE', len(fullfeature), len(fullfeature[0]))
 
-	# can append new features here
+	# TODO: append new features here especially separating out genre, rating
 
 	return fullfeature, vectorizer.vocabulary_, frequent_ngram_col_idx
 
+'''
+	Extract ngram features from train set and use the returned vocabulary to extractFeatures
+	ngram features on dev set
+
+	Dump files as .pkl to be loaded in text_nn.py
+
+	Run basic linear regression and output mean squared error
+'''
 def trainPredictor(trainExamples, devExamples):
 	print('BEGIN: TRAIN')
 	trainX, vocabulary, frequent_ngram_col_idx = extractFeatures(trainExamples)
