@@ -13,5 +13,5 @@ def readExamples(path):
         x = unicode(x.strip(), errors='ignore')
         examples.append((x, int(y)))
 
-    print 'Read %d examples from %s' % (len(examples), path)
+    print('Read %d examples from %s' % (len(examples), path))
     return examples
