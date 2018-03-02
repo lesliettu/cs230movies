@@ -50,32 +50,36 @@ def get_example(url):
 	return example
 
 examples = []
-count = 0
-BATCH_SIZE = 2000
+failed_urls = []
+count = 1
+BATCH_SIZE = 500
 batch_num = 0
 REPORT_INTERVAL = 20
+START = 2001
 with open('rottentomatoes_urls.csv', 'r') as url_file:
 	reader = csv.DictReader(url_file)
 	for row in reader:
-		time.sleep(1) # sleep for one second so the internet gods don't hate me for scraping too fast
-		examples.append(get_example(row['url']))
 		count += 1
+		if count < START: 
+			continue 
+
+		time.sleep(1) # sleep for one second so the internet gods don't hate me for scraping too fast
+
+		try:
+			examples.append(get_example(row['url']))
+		except:
+			print(':( Failed on',row['url'])
+			failed_urls.append(row['url'])
+
 		if count % REPORT_INTERVAL == 0:
 			print('Scraped', count, 'examples')
 		if count % BATCH_SIZE == 0:
-			with open('examples' + str(batch_num) + '.json', 'w') as outfile:
+			with open('examples' + str(count-BATCH_SIZE+1) + '-' + str(count)+'.json', 'w') as outfile:
 				json.dump(examples, outfile)
 			examples = []
 			batch_num += 1
 
+print(failed_urls)
 
 
-
-'''
-RANDOM STUFF DUMP
-https://stackoverflow.com/questions/27835619/urllib-and-ssl-certificate-verify-failed-error
-
-percent_fresh_tag = (soup.find('div', attrs={'class': 'col-sm-16 col-xs-12 tmeter-panel'}) 
-    					 .find('span', attrs={'class': 'meter-value superPageFontColor'})
-						 .find('span'))
-'''
+# https://stackoverflow.com/questions/27835619/urllib-and-ssl-certificate-verify-failed-error

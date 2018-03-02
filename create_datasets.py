@@ -2,6 +2,7 @@ import csv
 import os
 import random
 import re
+import json
 
 def buildTrainDevTestSet():
 	trainFile = open('moviesS.train', 'w')
@@ -15,12 +16,18 @@ def buildTrainDevTestSet():
 		for filename in files:
 			print os.path.join(subdir,filename)
 			filepath = os.path.join(subdir, filename)
-			with open(filepath, 'rb') as csvfile:
-				reader = csv.DictReader(csvfile)
-				for example in reader:
-					if example['percent_fresh']:
-						y = example['percent_fresh'] + ' '
-						x = example['title'] + ' ' + example['genre'] + ' ' + example['description']	# treat all as bag of words-TODO: separate features
+			with open(filepath, 'rb') as infile:
+				try:
+					examples = json.load(infile)
+				except:
+					continue
+				for example in examples:
+					if 'percent_fresh' in example:
+						y = str(example['percent_fresh']) + ' '
+						x = ''
+						for key in ['title', 'genre', 'description']:
+							if key in example and example[key]: 
+								x += ' ' + example[key]
 						x = " ".join(re.findall(r"[\w']+|[.,!?;]",x)).lower()	# split out punctuation
 						line = y + ' ' + x +'\n'
 						r = random.random()
@@ -28,7 +35,7 @@ def buildTrainDevTestSet():
 							trainFile.write(line)
 						elif r < dev_random:
 							devFile.write(line)
-						else:
+						else:									
 							testFile.write(line)
 
 

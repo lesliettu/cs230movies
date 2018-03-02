@@ -19,27 +19,25 @@ def train_run_nn():
         ########################
         #train a neural net
         NUM_OUTPUT_UNITS = 1
-
         NUM_VARIABLES = np.shape(trainX)[1] 
 
         model = Sequential()
-        model.add(Dense(100, input_dim=NUM_VARIABLES, activation='relu')) #, W_regularizer=l2(0.5))) 
+        model.add(Dense(30, input_dim=NUM_VARIABLES, activation='relu')) #, W_regularizer=l2(0.5))) 
         #model.add(keras.layers.core.Dropout(0.7))
-        model.add(Dense(100, activation='relu'))
-        model.add(Dense(100, activation='relu'))
-        model.add(Dense(100, activation='relu'))
+        model.add(Dense(30, activation='relu'))
+        model.add(Dense(30, activation='relu'))
         model.add(Dense(1, activation='relu'))
 
-        model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
+        model.compile(loss='mean_squared_error', optimizer='adam') #default learning rate: 0.001
 
         # Fit the model
-        model.fit(trainX, trainY, epochs=50, batch_size=None)
+        model.fit(trainX, trainY, epochs=200)
 
         # Test on dev
         train_error = model.evaluate(trainX, trainY)
-        print(train_error)
+        print('Train error:', train_error)
         dev_error = model.evaluate(devX, devY)
-        print(dev_error)
+        print('Dev error', dev_error)
 
         dev_predictions = model.predict(devX)
 
