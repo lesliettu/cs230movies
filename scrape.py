@@ -3,6 +3,10 @@ from bs4 import BeautifulSoup
 import json
 import csv
 import time
+import signal
+import sys
+
+
 
 def pretty_print(dict):
 	print(json.dumps(dict, sort_keys=True, indent=4, separators=(',', ': ')))
@@ -49,17 +53,32 @@ def get_example(url):
 
 	return example
 
+
+
 examples = []
 failed_urls = []
 count = 1
 BATCH_SIZE = 500
 batch_num = 0
 REPORT_INTERVAL = 20
-START = 2001
-with open('rottentomatoes_urls.csv', 'r') as url_file:
+START = 26501
+FAILED_URLS_FILENAME = 'failed_urls.json'
+
+def signal_handler(signal, frame):
+    with open(FAILED_URLS_FILENAME, 'w') as outfile:
+    	json.dump(failed_urls, outfile)
+    	print('Dumped failed urls in', FAILED_URLS_FILENAME)
+
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+
+with open('examples/rottentomatoes_urls.csv', 'r') as url_file:
 	reader = csv.DictReader(url_file)
 	for row in reader:
 		count += 1
+		if count == START:
+			print('Starting from', START)
 		if count < START: 
 			continue 
 
@@ -78,6 +97,12 @@ with open('rottentomatoes_urls.csv', 'r') as url_file:
 				json.dump(examples, outfile)
 			examples = []
 			batch_num += 1
+
+with open(FAILED_URLS_FILENAME, 'w') as outfile:
+    json.dump(failed_urls, outfile)
+    print('Dumped failed urls in', FAILED_URLS_FILENAME)
+
+
 
 print(failed_urls)
 
