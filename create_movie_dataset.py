@@ -41,7 +41,8 @@ def load_dataset(path_csv):
                 words = re.findall(r"[\w']+|[.,!?;]",bag)
                 dataset.append((words, tag))
 
-    chunk(sorted(tags), 2)
+
+    # chunk(sorted(tags), 10)
 
     return dataset
 
@@ -54,6 +55,7 @@ def chunk(xs, n):
     chunks[n-1:] = [xs[-r-s:]]
     for chunk in chunks:
         print(chunk[0], chunk[-1])
+
     return chunks
 
 def save_dataset(dataset, save_dir):

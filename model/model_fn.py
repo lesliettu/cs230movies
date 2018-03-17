@@ -61,8 +61,6 @@ def model_fn(mode, inputs, params, reuse=False):
         predictions = tf.argmax(logits, -1)
 
     # Define loss and accuracy (we need to apply a mask to account for padding)
-    print(tf.shape(labels))
-
     losses = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=labels)
     mask = tf.sequence_mask(sentence_lengths)
     losses = tf.boolean_mask(losses, mask)
