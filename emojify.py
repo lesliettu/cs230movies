@@ -187,7 +187,7 @@ Y_train_oh = convert_to_one_hot(Y_train, C = classes)    # 10 bins
 
 # In[60]:
 
-model.fit(X_train_indices, Y_train_oh, epochs = 25, batch_size = 32, shuffle=True)
+model.fit(X_train_indices, Y_train_oh, epochs = 25, batch_size = 128, shuffle=True)
 
 
 # Your model should perform close to **100% accuracy** on the training set. The exact accuracy you get may be a little different. Run the following cell to evaluate your model on the test set. 
