@@ -27,13 +27,13 @@ Configuration Part.
 """
 
 # Path to the textfiles for the trainings and validation set
-train_file = 'train.txt'
-val_file = 'dev.txt'
+train_file = 'train_small.txt'
+val_file = 'dev_small.txt'
 
 # Learning params
 learning_rate = 0.01
 num_epochs = 10
-batch_size = 25
+batch_size = 256
 
 # Network params
 dropout_rate = 0.5
@@ -44,8 +44,8 @@ train_layers = ['fc8', 'fc7', 'fc6']
 display_step = 20
 
 # Path for tf.summary.FileWriter and to store model checkpoints
-filewriter_path = "/tmp/finetune_alexnet/tensorboard"
-checkpoint_path = "/tmp/finetune_alexnet/checkpoints"
+filewriter_path = "/tmp/tensorboard"
+checkpoint_path = "/tmp/checkpoints"
 
 """
 Main Part of the finetuning Script.
@@ -163,6 +163,8 @@ with tf.Session() as sess:
         # Initialize iterator with the training dataset
         sess.run(training_init_op)
 
+        train_acc = 0.
+        train_count = 0.
         for step in range(train_batches_per_epoch):
 
             # get next batch of data
@@ -172,6 +174,12 @@ with tf.Session() as sess:
             sess.run(train_op, feed_dict={x: img_batch,
                                           y: label_batch,
                                           keep_prob: dropout_rate})
+            
+            acc = sess.run(accuracy, feed_dict={x: img_batch,
+                                                y: label_batch,
+                                                keep_prob: 1.})
+            train_acc += acc
+            train_count += 1
 
             # Generate summary with the current batch of data and write to file
             if step % display_step == 0:
@@ -180,6 +188,10 @@ with tf.Session() as sess:
                                                         keep_prob: 1.})
 
                 writer.add_summary(s, epoch*train_batches_per_epoch + step)
+
+        train_acc /= train_count
+        print("{} Train Accuracy = {:.4f}".format(datetime.now(),
+                                                       train_acc))
 
         # Validate the model on the entire validation set
         print("{} Start validation".format(datetime.now()))
