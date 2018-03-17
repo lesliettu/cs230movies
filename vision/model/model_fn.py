@@ -73,6 +73,7 @@ def model_fn(mode, inputs, params, reuse=False):
 
     # Define loss and accuracy
     loss = tf.losses.sparse_softmax_cross_entropy(labels=labels, logits=logits)
+    #loss = tf.losses.absolute_difference(labels=labels, predictions=predictions)
     accuracy = tf.reduce_mean(tf.cast(tf.equal(labels, predictions), tf.float32))
 
     # Define training step that minimizes the loss with the Adam optimizer
