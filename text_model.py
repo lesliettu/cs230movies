@@ -62,8 +62,8 @@ def trainPredictor(trainExamples, devExamples):
 	trainY = np.reshape(np.array(trainY),(len(trainY),1))
 	print('TRAIN X shape', trainX.shape)
 	print('TRAIN Y shape', trainY.shape)
-	pickle.dump(trainX, open('trainX.pkl', 'wb'))
-	pickle.dump(trainY, open('trainY.pkl', 'wb'))
+	pickle.dump(trainX, open('trainX_b.pkl', 'wb'))
+	pickle.dump(trainY, open('trainY_b.pkl', 'wb'))
 
 	# trainX = pickle.load(open('trainX.pkl', 'rb'))
 
@@ -83,8 +83,8 @@ def trainPredictor(trainExamples, devExamples):
 	devY = np.reshape(np.array(devY),(len(devY),1))
 	print('DEV X shape', devX.shape)
 	print('DEV Y shape', devY.shape)
-	pickle.dump(devX, open('devX.pkl', 'wb'))
-	pickle.dump(devY, open('devY.pkl', 'wb'))
+	pickle.dump(devX, open('devX_b.pkl', 'wb'))
+	pickle.dump(devY, open('devY_b.pkl', 'wb'))
 
 	devPredict = regr.predict(devX)
 	print("DEV Mean squared error", mean_squared_error(devY, devPredict))
@@ -95,8 +95,8 @@ def trainPredictor(trainExamples, devExamples):
 
 
 
-trainExamples = util.readExamples('moviesS.train')
-devExamples = util.readExamples('moviesS.dev')
-testExamples = util.readExamples('moviesS.test')
+trainExamples = util.readExamples('moviesS_b.train')
+devExamples = util.readExamples('moviesS_b.dev')
+testExamples = util.readExamples('moviesS_b.test')
 
 trainPredictor(trainExamples, devExamples)

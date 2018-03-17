@@ -11,10 +11,10 @@ from keras.layers import Dense, Activation
 
 def train_run_nn():
         #Load data
-        trainX = pickle.load(open('trainX.pkl', 'rb'))
-        trainY = pickle.load(open('trainY.pkl', 'rb'))
-        devX = pickle.load(open('devX.pkl', 'rb'))
-        devY = pickle.load(open('devY.pkl', 'rb'))
+        trainX = pickle.load(open('trainX_b.pkl', 'rb'))
+        trainY = pickle.load(open('trainY_b.pkl', 'rb'))
+        devX = pickle.load(open('devX_b.pkl', 'rb'))
+        devY = pickle.load(open('devY_b.pkl', 'rb'))
 
         ########################
         #train a neural net
