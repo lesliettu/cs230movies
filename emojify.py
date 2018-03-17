@@ -1,19 +1,20 @@
 # ## 2 - Emojifier-V2: Using LSTMs in Keras: 
 # 
 # Let's build an LSTM model that takes as input word sequences. This model will be able to take word ordering into account. Emojifier-V2 will continue to use pre-trained word embeddings to represent words, but will feed them into an LSTM, whose job it is to predict the most appropriate emoji. 
-# 
-# Run the following cell to load the Keras packages.
 
-# In[51]:
 
 import numpy as np
 np.random.seed(0)
 from keras.models import Model
+from keras.models import load_model
 from keras.layers import Dense, Input, Dropout, LSTM, Activation
 from keras.layers.embeddings import Embedding
 from keras.preprocessing import sequence
 from keras.initializers import glorot_uniform
 from emo_utils import *
+import matplotlib.pyplot as plt
+from keras.utils import plot_model
+from keras import optimizers
 
 np.random.seed(1)
 classes = 2
@@ -29,6 +30,7 @@ maxLen_train = len(max(X_train, key=len).split())
 maxLen_dev = len(max(X_dev, key=len).split())
 maxLen = max(maxLen_train, maxLen_dev)
 word_to_index, index_to_word, word_to_vec_map = read_glove_vecs('data/glove.6B.50d.txt')
+
 
 
 def sentences_to_indices(X, word_to_index, max_len):
@@ -47,7 +49,6 @@ def sentences_to_indices(X, word_to_index, max_len):
     
     m = X.shape[0]                                   # number of training examples
     
-    ### START CODE HERE ###
     # Initialize X_indices as a numpy matrix of zeros and the correct shape (1 line)
     X_indices = np.zeros((m,max_len))
     
@@ -55,24 +56,18 @@ def sentences_to_indices(X, word_to_index, max_len):
         
         # Convert the ith training sentence in lower case and split is into words. You should get a list of words.
         sentence_words = X[i].lower().split(' ')
-        
         # Initialize j to 0
         j = 0
-        
-        # Loop over the words of sentence_words
         for w in sentence_words:
             # Set the (i,j)th entry of X_indices to the index of the correct word.
             if w in word_to_index.keys():
                 X_indices[i, j] = word_to_index[w]
                 # Increment j to j + 1
                 j = j+1
-            
-    ### END CODE HERE ###
-    
+        
     return X_indices
 
 
-# GRADED FUNCTION: pretrained_embedding_layer
 
 def pretrained_embedding_layer(word_to_vec_map, word_to_index):
     """
@@ -108,13 +103,6 @@ def pretrained_embedding_layer(word_to_vec_map, word_to_index):
     embedding_layer.set_weights([emb_matrix])
     
     return embedding_layer
-
-
-# In[55]:
-
-embedding_layer = pretrained_embedding_layer(word_to_vec_map, word_to_index)
-print("weights[0][1][3] =", embedding_layer.get_weights()[0][1][3])
-
 
 
 def Emojify_V2(input_shape, word_to_vec_map, word_to_index):
@@ -170,34 +158,45 @@ def Emojify_V2(input_shape, word_to_vec_map, word_to_index):
 
 model = Emojify_V2((maxLen,), word_to_vec_map, word_to_index)
 model.summary()
+customAdam = optimizers.Adam(lr=0.001)
+model.compile(loss='categorical_crossentropy', optimizer=customAdam, metrics=['accuracy'])
 
-model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-
-
-model.save('nlp_experiments/keras_model/model.h5')
 # It's time to train your model. Your Emojifier-V2 `model` takes as input an array of shape (`m`, `max_len`) and outputs probability vectors of shape (`m`, `number of classes`). We thus have to convert X_train (array of sentences as strings) to X_train_indices (array of sentences as list of word indices), and Y_train (labels as indices) to Y_train_oh (labels as one-hot vectors).
-
-# In[59]:
 
 X_train_indices = sentences_to_indices(X_train, word_to_index, maxLen)
 print(Y_train[:20])
-Y_train_oh = convert_to_one_hot(Y_train, C = classes)    # 10 bins
+Y_train_oh = convert_to_one_hot(Y_train, C = classes)    # C bins
+history = model.fit(X_train_indices, Y_train_oh, epochs = 60, batch_size = 128, shuffle=True)
+
+model.save('nlp_experiments/keras_model/model.h5')
+
+'''
+del model
+model = load_model('nlp_experiments/keras_model/model.h5')
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+'''
+# plot_model(model, to_file='model.png')
 
 
-# Fit the Keras model on `X_train_indices` and `Y_train_oh`. We will use `epochs = 50` and `batch_size = 32`.
-
-# In[60]:
-
-model.fit(X_train_indices, Y_train_oh, epochs = 10, batch_size = 128, shuffle=True)
-
-
-# Your model should perform close to **100% accuracy** on the training set. The exact accuracy you get may be a little different. Run the following cell to evaluate your model on the test set. 
-
-# In[61]:
 X_dev_indices = sentences_to_indices(X_dev, word_to_index, max_len = maxLen)
 Y_dev_oh = convert_to_one_hot(Y_dev, C = classes)
 loss, acc = model.evaluate(X_dev_indices, Y_dev_oh)
 print()
 print("Dev accuracy = ", acc)
+
+print(history.history.keys())
+plt.plot(history.history['acc'])
+plt.title('model accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train'], loc='upper left')
+plt.savefig('trainacc.png')
+
+plt.plot(history.history['loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train'], loc='upper left')
+plt.savefig('trainloss.png')
 
 

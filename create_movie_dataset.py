@@ -35,7 +35,7 @@ def load_dataset(path_csv):
                     tag = 1
                 tags.append(tag)
                 bag = ''
-                for key in ['genre', 'description', 'title']:
+                for key in ['genre', 'title']:
                     if key in example and example[key]: 
                         bag += ' ' + example[key]
                 words = re.findall(r"[\w']+|[.,!?;]",bag)
@@ -96,6 +96,6 @@ if __name__ == "__main__":
     test_dataset = dataset[int(0.85*len(dataset)):]
 
     # Save the datasets to files
-    save_dataset(train_dataset, 'data/binary/train')
-    save_dataset(dev_dataset, 'data/binary/dev')
-    save_dataset(test_dataset, 'data/binary/test')
+    save_dataset(train_dataset, 'data/genre/train')
+    save_dataset(dev_dataset, 'data/genre/dev')
+    save_dataset(test_dataset, 'data/genre/test')
