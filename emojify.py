@@ -156,7 +156,7 @@ def Emojify_V2(input_shape, word_to_vec_map, word_to_index):
     # Add dropout with a probability of 0.5
     X = Dropout(0.3)(X)
     # Propagate X through a Dense layer with softmax activation to get back a batch of 10-dimensional vectors.
-    X = Dense(classes,activation='softmax')(X)
+    X = Dense(classes, activation='softmax')(X)
     # Add a softmax activation
     X = Activation('softmax')(X)
     

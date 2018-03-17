@@ -5,3 +5,5 @@ numpy
 keras
 matplotlib
 sklearn
+pandas
+h5py
