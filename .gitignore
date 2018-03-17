@@ -1,2 +1,7 @@
 *.pkl
 venv/
+*.json
+.env/*
+*.DS_Store
+*.pyc
+glove*
