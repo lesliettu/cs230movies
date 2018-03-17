@@ -132,7 +132,7 @@ def Emojify_V2(input_shape, word_to_vec_map, word_to_index):
     # Be careful, the returned output should be a batch of sequences.
     X = LSTM(128, return_sequences=True)(embeddings)
     # Add dropout with a probability of 0.5
-    X = Dropout(0.3)(X)
+    X = Dropout(0.4)(X)
     # Propagate X trough another LSTM layer with 128-dimensional hidden state
     # Be careful, the returned output should be a single hidden state, not a batch of sequences.
     X = LSTM(128, return_sequences=True)(X)
@@ -166,37 +166,40 @@ model.compile(loss='categorical_crossentropy', optimizer=customAdam, metrics=['a
 X_train_indices = sentences_to_indices(X_train, word_to_index, maxLen)
 print(Y_train[:20])
 Y_train_oh = convert_to_one_hot(Y_train, C = classes)    # C bins
-history = model.fit(X_train_indices, Y_train_oh, epochs = 60, batch_size = 128, shuffle=True)
+history = model.fit(X_train_indices, Y_train_oh, validation_split=0.17, epochs = 70, batch_size = 128, shuffle=True)
 
 model.save('nlp_experiments/keras_model/model.h5')
 
 '''
 del model
-model = load_model('nlp_experiments/keras_model/model.h5')
+model = load_model('nlp_experiments/keras_model/model_dev.h5')
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 '''
 # plot_model(model, to_file='model.png')
+for i in range(len(history.history['loss'])):
+    print('Epoch', i, 'train loss', history.history['loss'][i], 'train acc', history.history['acc'][i])
+    print('Epoch', i, 'dev loss', history.history['val_loss'][i], 'dev acc', history.history['val_acc'][i])
 
+# X_dev_indices = sentences_to_indices(X_dev, word_to_index, max_len = maxLen)
+# Y_dev_oh = convert_to_one_hot(Y_dev, C = classes)
+# loss, acc = model.evaluate(X_dev_indices, Y_dev_oh)
+# print()
+# print("Dev accuracy = ", acc)
 
-X_dev_indices = sentences_to_indices(X_dev, word_to_index, max_len = maxLen)
-Y_dev_oh = convert_to_one_hot(Y_dev, C = classes)
-loss, acc = model.evaluate(X_dev_indices, Y_dev_oh)
-print()
-print("Dev accuracy = ", acc)
-
-print(history.history.keys())
 plt.plot(history.history['acc'])
+plt.plot(history.history['val_acc'])
 plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
-plt.legend(['train'], loc='upper left')
+plt.legend(['train', 'test'], loc='upper left')
 plt.savefig('trainacc.png')
-
+# summarize history for loss
 plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
 plt.title('model loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
-plt.legend(['train'], loc='upper left')
+plt.legend(['train', 'test'], loc='upper left')
 plt.savefig('trainloss.png')
 
 

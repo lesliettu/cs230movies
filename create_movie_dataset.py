@@ -91,11 +91,11 @@ if __name__ == "__main__":
     print("- done.")
 
     # Split the dataset into train, dev and split (dummy split with no shuffle)
-    train_dataset = dataset[:int(0.7*len(dataset))]
-    dev_dataset = dataset[int(0.7*len(dataset)) : int(0.85*len(dataset))]
+    train_dataset = dataset[:int(0.85*len(dataset))]
+    #dev_dataset = dataset[int(0.7*len(dataset)) : int(0.85*len(dataset))]
     test_dataset = dataset[int(0.85*len(dataset)):]
 
     # Save the datasets to files
     save_dataset(train_dataset, 'data/genre/train')
-    save_dataset(dev_dataset, 'data/genre/dev')
+    # save_dataset(dev_dataset, 'data/genre/dev')
     save_dataset(test_dataset, 'data/genre/test')
