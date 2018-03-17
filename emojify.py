@@ -20,10 +20,10 @@ classes = 2
 
 
 # GRAB DATA
-X_train = read_file('data/binary/train/sentences.txt')
-Y_train = read_file('data/binary/train/labels.txt')
-X_dev = read_file('data/binary/dev/sentences.txt')
-Y_dev = read_file('data/binary/dev/labels.txt')
+X_train = read_file('data/genre/train/sentences.txt')
+Y_train = read_file('data/genre/train/labels.txt')
+X_dev = read_file('data/genre/dev/sentences.txt')
+Y_dev = read_file('data/genre/dev/labels.txt')
 
 maxLen_train = len(max(X_train, key=len).split())
 maxLen_dev = len(max(X_dev, key=len).split())
@@ -174,6 +174,7 @@ model.summary()
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 
+model.save('nlp_experiments/keras_model/model.h5')
 # It's time to train your model. Your Emojifier-V2 `model` takes as input an array of shape (`m`, `max_len`) and outputs probability vectors of shape (`m`, `number of classes`). We thus have to convert X_train (array of sentences as strings) to X_train_indices (array of sentences as list of word indices), and Y_train (labels as indices) to Y_train_oh (labels as one-hot vectors).
 
 # In[59]:
@@ -187,7 +188,7 @@ Y_train_oh = convert_to_one_hot(Y_train, C = classes)    # 10 bins
 
 # In[60]:
 
-model.fit(X_train_indices, Y_train_oh, epochs = 50, batch_size = 128, shuffle=True)
+model.fit(X_train_indices, Y_train_oh, epochs = 10, batch_size = 128, shuffle=True)
 
 
 # Your model should perform close to **100% accuracy** on the training set. The exact accuracy you get may be a little different. Run the following cell to evaluate your model on the test set. 
