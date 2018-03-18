@@ -21,14 +21,17 @@ classes = 2
 
 
 # GRAB DATA
-X_train = read_file('data/genre/train/sentences.txt')
-Y_train = read_file('data/genre/train/labels.txt')
-X_dev = read_file('data/genre/dev/sentences.txt')
-Y_dev = read_file('data/genre/dev/labels.txt')
+X_train = read_file('data/binary/train/sentences.txt')
+Y_train = read_file('data/binary/train/labels.txt')
+#X_dev = read_file('data/binary/dev/sentences.txt')
+#Y_dev = read_file('data/binary/dev/labels.txt')
+X_test = read_file('data/binary/test/sentences.txt')
+Y_test = read_file('data/binary/test/labels.txt')
+
 
 maxLen_train = len(max(X_train, key=len).split())
-maxLen_dev = len(max(X_dev, key=len).split())
-maxLen = max(maxLen_train, maxLen_dev)
+maxLen_test = len(max(X_test, key=len).split())
+maxLen = max(maxLen_train, maxLen_test)
 word_to_index, index_to_word, word_to_vec_map = read_glove_vecs('data/glove.6B.50d.txt')
 
 
@@ -166,39 +169,41 @@ model.compile(loss='categorical_crossentropy', optimizer=customAdam, metrics=['a
 X_train_indices = sentences_to_indices(X_train, word_to_index, maxLen)
 print(Y_train[:20])
 Y_train_oh = convert_to_one_hot(Y_train, C = classes)    # C bins
-history = model.fit(X_train_indices, Y_train_oh, validation_split=0.17, epochs = 70, batch_size = 128, shuffle=True)
+history = model.fit(X_train_indices, Y_train_oh, validation_split=0.17, epochs = 2, batch_size = 512, shuffle=True)
 
 
 '''
 del model
 model = load_model('nlp_experiments/keras_model/model_dev.h5')
-model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 '''
 # plot_model(model, to_file='model.png')
 for i in range(len(history.history['loss'])):
     print('Epoch', i, 'train loss', history.history['loss'][i], 'train acc', history.history['acc'][i])
     print('Epoch', i, 'dev loss', history.history['val_loss'][i], 'dev acc', history.history['val_acc'][i])
 
-# X_dev_indices = sentences_to_indices(X_dev, word_to_index, max_len = maxLen)
-# Y_dev_oh = convert_to_one_hot(Y_dev, C = classes)
-# loss, acc = model.evaluate(X_dev_indices, Y_dev_oh)
-# print()
-# print("Dev accuracy = ", acc)
+X_test_indices = sentences_to_indices(X_test, word_to_index, max_len = maxLen)
+Y_test_oh = convert_to_one_hot(Y_test, C = classes)
+loss, acc = model.evaluate(X_test_indices, Y_test_oh)
+print()
+print("Test loss = ", loss, "accuracy = ", acc)
 
+plt.figure(1)
 plt.plot(history.history['acc'])
 plt.plot(history.history['val_acc'])
 plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper left')
+plt.legend(['train', 'dev'], loc='upper left')
 plt.savefig('trainacc.png')
 # summarize history for loss
+plt.figure(2)
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
 plt.title('model loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper left')
+plt.legend(['train', 'dev'], loc='upper left')
 plt.savefig('trainloss.png')
 
 
