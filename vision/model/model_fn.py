@@ -21,13 +21,32 @@ def build_model(is_training, inputs, params):
 
     use_batch_norm = params.use_batch_norm
     bn_momentum = params.bn_momentum
-
+    num_channels = params.num_channels
     out = images
     # Define the number of channels of each convolution
     # For each block, we do: 3x3 conv -> batch norm -> relu -> 2x2 maxpool
-    
-    print('----------', 'inital shape:', out.get_shape())
 
+    channels = [num_channels, num_channels * 2, num_channels * 4, num_channels * 8]
+    for i, c in enumerate(channels):
+        with tf.variable_scope('block_{}'.format(i+1)):
+            out = tf.layers.conv2d(out, c, 3, padding='same')
+            if params.use_batch_norm:
+                out = tf.layers.batch_normalization(out, momentum=bn_momentum, training=is_training)
+            out = tf.nn.relu(out)
+            out = tf.layers.max_pooling2d(out, 2, 2)
+
+    out = tf.reshape(out, [-1, 14 * 14 * num_channels * 8])
+    with tf.variable_scope('fc_1'):
+        out = tf.layers.dense(out, num_channels * 8)
+        if params.use_batch_norm:
+            out = tf.layers.batch_normalization(out, momentum=bn_momentum, training=is_training)
+        out = tf.nn.relu(out)
+    with tf.variable_scope('fc_2'):
+        logits = tf.layers.dense(out, params.num_labels)
+
+    return logits
+
+"""
     with tf.variable_scope('block_1'):
         out = tf.layers.conv2d(out, 96, 11, strides=4, padding='valid')
         if use_batch_norm:
@@ -35,9 +54,6 @@ def build_model(is_training, inputs, params):
         out = tf.nn.relu(out)
         out = tf.layers.max_pooling2d(out, 3, 2)  
     
-    print('----------', 'shape after block 1:', out.get_shape())
-
-
     with tf.variable_scope('block_2'):
         out = tf.layers.conv2d(out, 256, 5, padding='valid')
         if use_batch_norm:
@@ -45,33 +61,20 @@ def build_model(is_training, inputs, params):
         out = tf.nn.relu(out)
         out = tf.layers.max_pooling2d(out, 3, 2)        
 
-    print('----------', 'shape after block 3:', out.get_shape())
-
     with tf.variable_scope('conv_3'):
         out = tf.layers.conv2d(out, 384, 3, padding='valid')
         out = tf.nn.relu(out)
-
-    print('----------', 'shape after conv 3:', out.get_shape())
 
     with tf.variable_scope('conv_4'):
         out = tf.layers.conv2d(out, 384, 3, padding='valid')
         out = tf.nn.relu(out)
 
-    print('----------', 'shape after conv 4:', out.get_shape())
-
     with tf.variable_scope('conv_5'):
         out = tf.layers.conv2d(out, 256, 3, padding='valid')
         out = tf.nn.relu(out)
 
-    print('----------', 'shape after conv 5:', out.get_shape())
-
-
     with tf.variable_scope('pool_3'):
         out = tf.layers.max_pooling2d(out, 3, 2)        
-
-    print('----------', 'shape after pool 3:', out.get_shape())
-
-    print('----------', '6*6*256:', 6*6*256)
 
     out = tf.reshape(out, [-1, 256])
     with tf.variable_scope('fc_1'):
@@ -82,8 +85,7 @@ def build_model(is_training, inputs, params):
         out = tf.nn.relu(out)
     with tf.variable_scope('fc_3'):
         logits = tf.layers.dense(out, params.num_labels)
-
-    return logits
+"""
 
 
 def model_fn(mode, inputs, params, reuse=False):
@@ -178,60 +180,3 @@ def model_fn(mode, inputs, params, reuse=False):
     return model_spec
 
 
-"""
-    num_channels = params.num_channels
-    bn_momentum = params.bn_momentum
-    channels = [num_channels, num_channels * 2, num_channels * 4, num_channels * 8]
-    
-    for i, c in enumerate(channels):
-        with tf.variable_scope('block_{}'.format(i+1)):
-            out = tf.layers.conv2d(out, c, 3, padding='same')
-            if params.use_batch_norm:
-                out = tf.layers.batch_normalization(out, momentum=bn_momentum, training=is_training)
-            out = tf.nn.relu(out)
-            out = tf.layers.max_pooling2d(out, 2, 2)
-
-    assert out.get_shape().as_list() == [None, 4, 4, num_channels * 8]
-"""
-"""
-out = conv_block(out,
-           64,
-           conv_kernel_size=11,
-           conv_stride=4,
-           conv_padding=2,
-           use_batch_norm=False,
-           pool_kernel_size = 3,
-           pool_stride=2,
-           scope='block_1')
-out = conv_block(out,
-           256,
-           conv_kernel_size=5,
-           conv_stride=1,
-           conv_padding=2,
-           use_batch_norm=False,
-           pool_kernel_size = 3,
-           pool_stride=2,
-           scope='block_2')
-out = conv_block(out,
-           384,
-           conv_kernel_size=3,
-           conv_stride=1,
-           conv_padding=1,
-           use_batch_norm=False,
-           use_pool=False,
-           scope='block_3')
-out = conv_block(out, 384, conv_kernel_size=3, conv_stride=1, conv_padding=1, use_pool=False,
-                 scope='block_4')
-out = conv_block(out, 256, conv_kernel_size=3, conv_stride=1, conv_padding=1, use_pool=True,
-                 pool_kernel_size=3, pool_stride=2,scope='block_5')
-"""
-"""
-out = tf.reshape(out, [-1, 6*6*256])
-with tf.variable_scope('fc_1'):
-    out = tf.layers.dense(out, 4096)
-    if params.use_batch_norm:
-        out = tf.layers.batch_normalization(out, momentum=bn_momentum, training=is_training)
-    out = tf.nn.relu(out)
-with tf.variable_scope('fc_2'):
-    logits = tf.layers.dense(out, params.num_labels)
-"""
