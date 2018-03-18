@@ -2,14 +2,17 @@ from PIL import Image
 import os
 from tqdm import tqdm
 import json
-#from pathlib import Path
+#from pathlib import Pat
+
+# RUN FROM THE TOP DIRECTORY, like cs230movies/
 
 SIZE = 224
-OUTPUT_DIR = '/data/square/'
+OUTPUT_DIR = '/square_224/'
 
 def reformat_filename(basename):
-	parts = basename.split('_')
-	return parts[0] + '_IMG_' + parts[1]
+	#parts = basename.split('_')
+	#return parts[0] + '_IMG_' + parts[1]
+	return basename
 
 def resize_and_save(filename):
 	image = Image.open(filename)
@@ -20,7 +23,7 @@ def resize_and_save(filename):
 
 failed = []
 
-for subdir, dirs, files in os.walk(os.getcwd()+'/data/posters/'): # walk through data files
+for subdir, dirs, files in os.walk(os.getcwd()+'/posters/'): # walk through data files
 	for filename in files:
 		#resize_and_save(os.path.join(subdir,filename))
 		
@@ -30,6 +33,7 @@ for subdir, dirs, files in os.walk(os.getcwd()+'/data/posters/'): # walk through
 			print('failed on', filename)
 			failed.append(filename)
 		
-
+"""
 with open('resize_failed.json', 'w') as outfile:
 	json.dump(failed, outfile)
+"""
