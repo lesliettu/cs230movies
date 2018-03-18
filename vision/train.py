@@ -17,7 +17,7 @@ from model.training import train_and_evaluate
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--model_dir', default='experiments/test',
+parser.add_argument('--model_dir', default='experiments/base_model',
                     help="Experiment directory containing params.json")
 parser.add_argument('--data_dir', default='data/split_posters',
                     help="Directory containing the dataset")
