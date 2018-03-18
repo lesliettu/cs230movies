@@ -10,6 +10,7 @@ import re
 SMALL_SET = 1000
 bins = [19, 34, 48, 60, 69, 78, 83, 90, 97, 100]
 
+
 def load_dataset(path_csv):
     """Loads dataset into memory from csv file"""
     # Open the csv file, need to specify the encoding for python3
@@ -78,6 +79,13 @@ def save_dataset(dataset, save_dir):
                 file_labels.write("{}\n".format(tags))
     print("- done.")
 
+def load_idx():
+    train_idx = []
+    dev_idx = []
+    test_idx = []
+    ### IMPORT
+    return train_idx, dev_idx, test_idx
+
 
 if __name__ == "__main__":
     # Check that the dataset exists (you need to make sure you haven't downloaded the `ner.csv`)
@@ -91,11 +99,25 @@ if __name__ == "__main__":
     print("- done.")
 
     # Split the dataset into train, dev and split (dummy split with no shuffle)
+    print("Splitting according to movie indices...")
+
+    train_idx, dev_idx, test_idx = load_idx()
+
+    for i in train_idx:
+        train_dataset.append(dataset[i])
+    for i in dev_idx:
+        dev_dataset.append(dataset[i])
+    for i in test_idx:
+        test_dataset.append(dataset[i])
+        
+
+    '''
     train_dataset = dataset[:int(0.85*len(dataset))]
-    #dev_dataset = dataset[int(0.7*len(dataset)) : int(0.85*len(dataset))]
+    dev_dataset = dataset[int(0.7*len(dataset)) : int(0.85*len(dataset))]
     test_dataset = dataset[int(0.85*len(dataset)):]
+    '''
 
     # Save the datasets to files
     save_dataset(train_dataset, 'data/binary/train')
-    # save_dataset(dev_dataset, 'data/genre/dev')
+    save_dataset(dev_dataset, 'data/binary/dev')
     save_dataset(test_dataset, 'data/binary/test')
