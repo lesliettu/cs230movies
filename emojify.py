@@ -168,7 +168,6 @@ print(Y_train[:20])
 Y_train_oh = convert_to_one_hot(Y_train, C = classes)    # C bins
 history = model.fit(X_train_indices, Y_train_oh, validation_split=0.17, epochs = 70, batch_size = 128, shuffle=True)
 
-model.save('nlp_experiments/keras_model/model.h5')
 
 '''
 del model
@@ -202,4 +201,6 @@ plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='upper left')
 plt.savefig('trainloss.png')
 
+
+model.save('nlp_experiments/keras_model/model.h5')
 
