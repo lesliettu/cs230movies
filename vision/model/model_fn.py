@@ -25,7 +25,7 @@ def build_model(is_training, inputs, params):
     out = images
     # Define the number of channels of each convolution
     # For each block, we do: 3x3 conv -> batch norm -> relu -> 2x2 maxpool
-
+    """
     channels = [num_channels, num_channels * 2, num_channels * 4, num_channels * 8]
     for i, c in enumerate(channels):
         with tf.variable_scope('block_{}'.format(i+1)):
@@ -43,10 +43,8 @@ def build_model(is_training, inputs, params):
         out = tf.nn.relu(out)
     with tf.variable_scope('fc_2'):
         logits = tf.layers.dense(out, params.num_labels)
+    """
 
-    return logits
-
-"""
     with tf.variable_scope('block_1'):
         out = tf.layers.conv2d(out, 96, 11, strides=4, padding='valid')
         if use_batch_norm:
@@ -85,7 +83,8 @@ def build_model(is_training, inputs, params):
         out = tf.nn.relu(out)
     with tf.variable_scope('fc_3'):
         logits = tf.layers.dense(out, params.num_labels)
-"""
+
+    return logits
 
 
 def model_fn(mode, inputs, params, reuse=False):

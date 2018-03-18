@@ -92,6 +92,7 @@ def train_and_evaluate(train_model_spec, eval_model_spec, model_dir, params, res
             logging.info("Epoch {}/{}".format(epoch + 1, begin_at_epoch + params.num_epochs))
             # Compute number of batches in one epoch (one full pass over the training set)
             num_steps = (params.train_size + params.batch_size - 1) // params.batch_size
+            logging.info("")
             train_sess(sess, train_model_spec, num_steps, train_writer, params)
 
             # Save weights
