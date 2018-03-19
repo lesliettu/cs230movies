@@ -97,7 +97,7 @@ def train_and_evaluate(train_model_spec, eval_model_spec, model_dir, params, res
         eval_writer = tf.summary.FileWriter(os.path.join(model_dir, 'eval_summaries'), sess.graph)
         
         num_steps = (params.eval_size + params.batch_size - 1) // params.batch_size
-        metrics = evaluate_sess(sess, eval_model_spec, num_steps, eval_writer, epoch='1000')
+        #metrics = evaluate_sess(sess, eval_model_spec, num_steps, eval_writer, epoch='1000')
 
         best_eval_acc = 0.0
         for epoch in range(begin_at_epoch, begin_at_epoch + params.num_epochs):
@@ -114,7 +114,7 @@ def train_and_evaluate(train_model_spec, eval_model_spec, model_dir, params, res
 
             # Evaluate for one epoch on validation set
             num_steps = (params.eval_size + params.batch_size - 1) // params.batch_size
-#            metrics = evaluate_sess(sess, eval_model_spec, num_steps, eval_writer, epoch=epoch)
+            metrics = evaluate_sess(sess, eval_model_spec, num_steps, eval_writer, epoch=epoch)
 
             # If best_eval, best_save_path
             eval_acc = metrics['accuracy']
