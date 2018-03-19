@@ -40,12 +40,12 @@ def build_model(is_training, inputs, params):
         if params.use_batch_norm:
             out = tf.layers.batch_normalization(out, momentum=bn_momentum, training=is_training)
         if is_training:
-            out = tf.dropout(0.8)
+            out = tf.nn.dropout(0.8)
         out = tf.nn.relu(out)
     with tf.variable_scope('fc_2'):
         logits = tf.layers.dense(out, params.num_labels)
         if is_training:
-            out = tf.dropout(0.8)
+            out = tf.nn.dropout(0.8)
     with tf.variable_scope('sm'):
         softmax = tf.nn.softmax(logits)
 
