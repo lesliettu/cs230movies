@@ -83,7 +83,7 @@ def make_plot(train_metrics, eval_metrics, epoch):
     plt.title('Image Model Metrics')
     plt.xlabel('epoch')
     plt.legend(['train accuracy', 'dev accuracy', 'train loss', 'dev loss'], loc='upper left')
-    plt.savefig('saved_values/cnn_metrics_' + epoch.png')
+    plt.savefig('saved_values/cnn_metrics_epoch_' + str(epoch) + '.png')
     # summarize history for loss
 
 def train_and_evaluate(train_model_spec, eval_model_spec, model_dir, params, restore_from=None):
