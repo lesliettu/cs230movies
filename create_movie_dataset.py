@@ -36,7 +36,7 @@ def load_dataset(path_csv):
                     tag = 1
                 tags.append(tag)
                 bag = ''
-                for key in ['genre', 'title', 'description']:
+                for key in ['genre', 'title']:
                     if key in example and example[key]: 
                         bag += ' ' + example[key]
                 words = re.findall(r"[\w']+|[.,!?;]",bag)
@@ -80,9 +80,13 @@ def save_dataset(dataset, save_dir):
     print("- done.")
 
 def load_idx():
-    train_idx = []
-    dev_idx = []
-    test_idx = []
+    with open('train_indices.json', 'rb') as f:
+        train_idx = json.load(f)
+    with open('dev_indices.json', 'rb') as f:
+        dev_idx = json.load(f)
+    with open('test_indices.json', 'rb') as f:
+        test_idx = json.load(f)
+        print(test_idx)
     ### IMPORT
     return train_idx, dev_idx, test_idx
 
@@ -103,10 +107,16 @@ if __name__ == "__main__":
 
     train_idx, dev_idx, test_idx = load_idx()
 
+    train_dataset = []
+    dev_dataset = []
+    test_dataset = []
+
     for i in train_idx:
         train_dataset.append(dataset[i])
+
     for i in dev_idx:
-        dev_dataset.append(dataset[i])
+        train_dataset.append(dataset[i])
+        # dev_dataset.append(dataset[i])
     for i in test_idx:
         test_dataset.append(dataset[i])
         
@@ -118,6 +128,6 @@ if __name__ == "__main__":
     '''
 
     # Save the datasets to files
-    save_dataset(train_dataset, 'data/binary/train')
-    save_dataset(dev_dataset, 'data/binary/dev')
-    save_dataset(test_dataset, 'data/binary/test')
+    save_dataset(train_dataset, 'data/binary_mov/train')
+    # save_dataset(dev_dataset, 'data/binary_mov/dev')
+    save_dataset(test_dataset, 'data/binary_mov/test')
