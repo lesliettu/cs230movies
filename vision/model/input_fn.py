@@ -1,7 +1,7 @@
 """Create the input data pipeline using `tf.data`"""
 
 import tensorflow as tf
-
+import json
 
 def _parse_function(filename, label, size):
     """Obtain the image from the filename (for both training and validation).
@@ -58,6 +58,9 @@ def input_fn(is_training, filenames, labels, params):
     num_samples = len(filenames)
     assert len(filenames) == len(labels), "Filenames and labels should have same length"
 
+    with open('saved_values/train_order.json' if is_training else 'saved_values/dev_order.json', 'w') as f:
+        json.dump(filenames, f)
+
     # Create a Dataset serving batches of images and labels
     # We don't repeat for multiple epochs because we always train and evaluate for one epoch
     parse_fn = lambda f, l: _parse_function(f, l, params.image_size)
@@ -65,7 +68,7 @@ def input_fn(is_training, filenames, labels, params):
 
     if is_training:
         dataset = (tf.data.Dataset.from_tensor_slices((tf.constant(filenames), tf.constant(labels)))
-            .shuffle(num_samples)  # whole dataset into the buffer ensures good shuffling
+            #.shuffle(num_samples)  # whole dataset into the buffer ensures good shuffling
             .map(parse_fn, num_parallel_calls=params.num_parallel_calls)
             .map(train_fn, num_parallel_calls=params.num_parallel_calls)
             .batch(params.batch_size)

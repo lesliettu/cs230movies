@@ -5,12 +5,14 @@ import os
 
 from tqdm import trange
 import tensorflow as tf
+import numpy as np
+import json
 
 from model.utils import save_dict_to_json
 from model.evaluation import evaluate_sess
 
 
-def train_sess(sess, model_spec, num_steps, writer, params):
+def train_sess(sess, model_spec, num_steps, writer, params, epoch):
     """Train the model on `num_steps` batches
 
     Args:
@@ -27,6 +29,7 @@ def train_sess(sess, model_spec, num_steps, writer, params):
     metrics = model_spec['metrics']
     summary_op = model_spec['summary_op']
     global_step = tf.train.get_global_step()
+    logits = model_spec['logits']
 
     # Load the training dataset into the pipeline and initialize the metrics local variables
     sess.run(model_spec['iterator_init_op'])
@@ -34,23 +37,30 @@ def train_sess(sess, model_spec, num_steps, writer, params):
 
     # Use tqdm for progress bar
     t = trange(num_steps)
+    logits_all = []
     for i in t:
         # Evaluate summaries for tensorboard only once in a while
         if i % params.save_summary_steps == 0:
             # Perform a mini-batch update
-            _, _, loss_val, summ, global_step_val = sess.run([train_op, update_metrics, loss,
-                                                              summary_op, global_step])
+            _, _, loss_val, summ, global_step_val, logits_val = sess.run([train_op, update_metrics, loss,
+                                                              summary_op, global_step, logits])
             # Write summaries for tensorboard
             writer.add_summary(summ, global_step_val)
         else:
-            _, _, loss_val = sess.run([train_op, update_metrics, loss])
+            _, _, loss_val, logits_val = sess.run([train_op, update_metrics, loss, logits])
         # Log the loss in the tqdm progress bar
         t.set_postfix(loss='{:05.3f}'.format(loss_val))
+        if i == 0:
+            logits_all = logits_val
+        else:
+            logits_all = np.append(logits_all, logits_val, axis=0)
 
+    with open('saved_values/train_logits_epoch_'+str(epoch)+'.json', 'w') as f:
+        json.dump(logits_all.tolist(), f)
 
     metrics_values = {k: v[0] for k, v in metrics.items()}
     metrics_val = sess.run(metrics_values)
-    metrics_string = " ; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_val.items())
+    metrics_string = " i; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_val.items())
     logging.info("- Train metrics: " + metrics_string)
 
 
@@ -93,7 +103,7 @@ def train_and_evaluate(train_model_spec, eval_model_spec, model_dir, params, res
             # Compute number of batches in one epoch (one full pass over the training set)
             num_steps = (params.train_size + params.batch_size - 1) // params.batch_size
             logging.info("")
-            train_sess(sess, train_model_spec, num_steps, train_writer, params)
+            train_sess(sess, train_model_spec, num_steps, train_writer, params, epoch)
 
             # Save weights
             last_save_path = os.path.join(model_dir, 'last_weights', 'after-epoch')
@@ -101,7 +111,7 @@ def train_and_evaluate(train_model_spec, eval_model_spec, model_dir, params, res
 
             # Evaluate for one epoch on validation set
             num_steps = (params.eval_size + params.batch_size - 1) // params.batch_size
-            metrics = evaluate_sess(sess, eval_model_spec, num_steps, eval_writer)
+            metrics = evaluate_sess(sess, eval_model_spec, num_steps, eval_writer, epoch=epoch)
 
             # If best_eval, best_save_path
             eval_acc = metrics['accuracy']

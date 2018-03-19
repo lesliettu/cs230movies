@@ -95,6 +95,7 @@ def model_fn(mode, inputs, params, reuse=False):
             'loss': tf.metrics.mean(loss)
         }
 
+
     # Group the update ops for the tf.metrics
     update_metrics_op = tf.group(*[op for _, op in metrics.values()])
 
@@ -130,6 +131,7 @@ def model_fn(mode, inputs, params, reuse=False):
     model_spec['metrics'] = metrics
     model_spec['update_metrics'] = update_metrics_op
     model_spec['summary_op'] = tf.summary.merge_all()
+    model_spec['logits'] = logits
 
     if is_training:
         model_spec['train_op'] = train_op

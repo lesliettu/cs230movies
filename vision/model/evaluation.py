@@ -5,11 +5,13 @@ import os
 
 from tqdm import trange
 import tensorflow as tf
+import json
+import numpy as np
 
 from model.utils import save_dict_to_json
 
 
-def evaluate_sess(sess, model_spec, num_steps, writer=None, params=None):
+def evaluate_sess(sess, model_spec, num_steps, writer=None, params=None, epoch='?'):
     """Train the model on `num_steps` batches.
 
     Args:
@@ -28,11 +30,18 @@ def evaluate_sess(sess, model_spec, num_steps, writer=None, params=None):
     sess.run(model_spec['metrics_init_op'])
 
     # compute metrics over the dataset
-    for _ in range(num_steps):
-        sess.run(update_metrics)
+    logits_all = None
+    for t in range(num_steps):
+        _, logits_val = sess.run([update_metrics, model_spec['logits']])
+        if t == 0:
+            logits_all = logits_val
+        else:
+            logits_all = np.append(logits_all, logits_val, axis=0)
 
-    pred = sess.run(model_spec['prediction'])
-    logging.info('asdfadsfsadfsdafsdaf', pred)
+    with open('saved_values/dev_logits_epoch_'+str(epoch)+'.json', 'w') as f:
+        json.dump(logits_all.tolist(), f)
+
+
     # Get the values of the metrics
     metrics_values = {k: v[0] for k, v in eval_metrics.items()}
     metrics_val = sess.run(metrics_values)
