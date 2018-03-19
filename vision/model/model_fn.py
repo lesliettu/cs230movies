@@ -42,8 +42,10 @@ def build_model(is_training, inputs, params):
         out = tf.nn.relu(out)
     with tf.variable_scope('fc_2'):
         logits = tf.layers.dense(out, params.num_labels)
+    with tf.variable_scope('sm'):
+        softmax = tf.nn.softmax(logits)
 
-    return logits
+    return logits, softmax
 
 
 def model_fn(mode, inputs, params, reuse=False):
@@ -67,7 +69,7 @@ def model_fn(mode, inputs, params, reuse=False):
     # MODEL: define the layers of the model
     with tf.variable_scope('model', reuse=reuse):
         # Compute the output distribution of the model and the predictions
-        logits = build_model(is_training, inputs, params)
+        logits, softmax = build_model(is_training, inputs, params)
         predictions = tf.argmax(logits, 1)
 
     # Define loss and accuracy
@@ -131,7 +133,7 @@ def model_fn(mode, inputs, params, reuse=False):
     model_spec['metrics'] = metrics
     model_spec['update_metrics'] = update_metrics_op
     model_spec['summary_op'] = tf.summary.merge_all()
-    model_spec['logits'] = logits
+    model_spec['softmax'] = softmax
 
     if is_training:
         model_spec['train_op'] = train_op

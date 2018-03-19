@@ -59,7 +59,7 @@ def input_fn(is_training, filenames, labels, params):
     num_samples = len(filenames)
     assert len(filenames) == len(labels), "Filenames and labels should have same length"
 
-    random.shuffle(filenames)
+    #random.shuffle(filenames)
 
     with open('saved_values/train_order.json' if is_training else 'saved_values/dev_order.json', 'w') as f:
         json.dump(filenames, f)

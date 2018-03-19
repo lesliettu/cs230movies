@@ -7,6 +7,7 @@ from tqdm import trange
 import tensorflow as tf
 import numpy as np
 import json
+import matplotlib.pyplot as plt
 
 from model.utils import save_dict_to_json
 from model.evaluation import evaluate_sess
@@ -29,7 +30,7 @@ def train_sess(sess, model_spec, num_steps, writer, params, epoch):
     metrics = model_spec['metrics']
     summary_op = model_spec['summary_op']
     global_step = tf.train.get_global_step()
-    logits = model_spec['logits']
+    #logits = model_spec['logits']
 
     # Load the training dataset into the pipeline and initialize the metrics local variables
     sess.run(model_spec['iterator_init_op'])
@@ -42,12 +43,12 @@ def train_sess(sess, model_spec, num_steps, writer, params, epoch):
         # Evaluate summaries for tensorboard only once in a while
         if i % params.save_summary_steps == 0:
             # Perform a mini-batch update
-            _, _, loss_val, summ, global_step_val, logits_val = sess.run([train_op, update_metrics, loss,
-                                                              summary_op, global_step, logits])
+            _, _, loss_val, summ, global_step_val = sess.run([train_op, update_metrics, loss,
+                                                              summary_op, global_step])
             # Write summaries for tensorboard
             writer.add_summary(summ, global_step_val)
         else:
-            _, _, loss_val, logits_val = sess.run([train_op, update_metrics, loss, logits])
+            _, _, loss_val = sess.run([train_op, update_metrics, loss])
         # Log the loss in the tqdm progress bar
         t.set_postfix(loss='{:05.3f}'.format(loss_val))
         #if i == 0:
@@ -62,7 +63,28 @@ def train_sess(sess, model_spec, num_steps, writer, params, epoch):
     metrics_val = sess.run(metrics_values)
     metrics_string = " i; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_val.items())
     logging.info("- Train metrics: " + metrics_string)
+    return metrics_val
 
+def make_plot(train_metrics, eval_metrics):
+    print('train_metrics', train_metrics)
+    print('eval_metrics', eval_metrics)
+
+    train_acc = [m['accuracy'] for m in train_metrics]
+    dev_acc = [m['accuracy'] for m in eval_metrics]
+    train_loss = [m['loss'] for m in train_metrics]
+    dev_loss = [m['loss'] for m in eval_metrics]
+
+
+    plt.figure(1)
+    plt.plot(train_acc)
+    plt.plot(dev_acc)
+    plt.plot(train_loss)
+    plt.plot(dev_loss)
+    plt.title('Image Model Metrics')
+    plt.xlabel('epoch')
+    plt.legend(['train accuracy', 'dev accuracy', 'train loss', 'dev loss'], loc='upper left')
+    plt.savefig('saved_values/cnn_metrics.png')
+    # summarize history for loss
 
 def train_and_evaluate(train_model_spec, eval_model_spec, model_dir, params, restore_from=None):
     """Train the model and evaluate every epoch.
@@ -100,14 +122,18 @@ def train_and_evaluate(train_model_spec, eval_model_spec, model_dir, params, res
         #metrics = evaluate_sess(sess, eval_model_spec, num_steps, eval_writer, epoch='1000')
 
         best_eval_acc = 0.0
+        train_metrics = []
+        eval_metrics = []
         for epoch in range(begin_at_epoch, begin_at_epoch + params.num_epochs):
             # Run one epoch
             logging.info("Epoch {}/{}".format(epoch + 1, begin_at_epoch + params.num_epochs))
             # Compute number of batches in one epoch (one full pass over the training set)
             num_steps = (params.train_size + params.batch_size - 1) // params.batch_size
             logging.info("")
-            train_sess(sess, train_model_spec, num_steps, train_writer, params, epoch)
+            metrics_train = train_sess(sess, train_model_spec, num_steps, train_writer, params, epoch)
+            train_metrics.append(metrics_train)
 
+            print('METRICS_TRAIN',metrics_train)
             # Save weights
             last_save_path = os.path.join(model_dir, 'last_weights', 'after-epoch')
             last_saver.save(sess, last_save_path, global_step=epoch + 1)
@@ -115,6 +141,7 @@ def train_and_evaluate(train_model_spec, eval_model_spec, model_dir, params, res
             # Evaluate for one epoch on validation set
             num_steps = (params.eval_size + params.batch_size - 1) // params.batch_size
             metrics = evaluate_sess(sess, eval_model_spec, num_steps, eval_writer, epoch=epoch)
+            eval_metrics.append(metrics)
 
             # If best_eval, best_save_path
             eval_acc = metrics['accuracy']
@@ -132,3 +159,5 @@ def train_and_evaluate(train_model_spec, eval_model_spec, model_dir, params, res
             # Save latest eval metrics in a json file in the model directory
             last_json_path = os.path.join(model_dir, "metrics_eval_last_weights.json")
             save_dict_to_json(metrics, last_json_path)
+
+        make_plot(train_metrics, eval_metrics)

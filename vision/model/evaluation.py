@@ -32,13 +32,13 @@ def evaluate_sess(sess, model_spec, num_steps, writer=None, params=None, epoch='
     # compute metrics over the dataset
     logits_all = None
     for t in range(num_steps):
-        _, logits_val = sess.run([update_metrics, model_spec['logits']])
+        _, logits_val = sess.run([update_metrics, model_spec['softmax']])
         if t == 0:
             logits_all = logits_val
         else:
             logits_all = np.append(logits_all, logits_val, axis=0)
 
-    with open('saved_values/dev_logits_epoch_'+str(epoch)+'.json', 'w') as f:
+    with open('saved_values/dev_softmax_epoch_'+str(epoch)+'.json', 'w') as f:
         json.dump(logits_all.tolist(), f)
 
 
