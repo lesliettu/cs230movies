@@ -65,9 +65,9 @@ def train_sess(sess, model_spec, num_steps, writer, params, epoch):
     logging.info("- Train metrics: " + metrics_string)
     return metrics_val
 
-def make_plot(train_metrics, eval_metrics):
-    print('train_metrics', train_metrics)
-    print('eval_metrics', eval_metrics)
+def make_plot(train_metrics, eval_metrics, epoch):
+    #print('train_metrics', train_metrics)
+    #print('eval_metrics', eval_metrics)
 
     train_acc = [m['accuracy'] for m in train_metrics]
     dev_acc = [m['accuracy'] for m in eval_metrics]
@@ -83,7 +83,7 @@ def make_plot(train_metrics, eval_metrics):
     plt.title('Image Model Metrics')
     plt.xlabel('epoch')
     plt.legend(['train accuracy', 'dev accuracy', 'train loss', 'dev loss'], loc='upper left')
-    plt.savefig('saved_values/cnn_metrics.png')
+    plt.savefig('saved_values/cnn_metrics_' + epoch.png')
     # summarize history for loss
 
 def train_and_evaluate(train_model_spec, eval_model_spec, model_dir, params, restore_from=None):
@@ -159,5 +159,6 @@ def train_and_evaluate(train_model_spec, eval_model_spec, model_dir, params, res
             # Save latest eval metrics in a json file in the model directory
             last_json_path = os.path.join(model_dir, "metrics_eval_last_weights.json")
             save_dict_to_json(metrics, last_json_path)
+            make_plot(train_metrics, eval_metrics, epoch)
 
-        make_plot(train_metrics, eval_metrics)
+
