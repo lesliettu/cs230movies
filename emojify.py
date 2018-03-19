@@ -15,18 +15,20 @@ from emo_utils import *
 import matplotlib.pyplot as plt
 from keras.utils import plot_model
 from keras import optimizers
+import json
+from keras import backend as K
 
 np.random.seed(1)
 classes = 2
 
 
 # GRAB DATA
-X_train = read_file('data/binary/train/sentences.txt')
-Y_train = read_file('data/binary/train/labels.txt')
-X_dev = read_file('data/binary/dev/sentences.txt')
-Y_dev = read_file('data/binary/dev/labels.txt')
-X_test = read_file('data/binary/test/sentences.txt')
-Y_test = read_file('data/binary/test/labels.txt')
+X_train = read_file('data/binary_mov/train/sentences.txt')
+Y_train = read_file('data/binary_mov/train/labels.txt')
+X_dev = read_file('data/binary_mov/dev/sentences.txt')
+Y_dev = read_file('data/binary_mov/dev/labels.txt')
+X_test = read_file('data/binary_mov/test/sentences.txt')
+Y_test = read_file('data/binary_mov/test/labels.txt')
 
 
 maxLen_train = len(max(X_train, key=len).split())
@@ -131,7 +133,7 @@ def Emojify_V2(input_shape, word_to_vec_map, word_to_index):
     
     # Propagate sentence_indices through your embedding layer, you get back the embeddings
     embeddings = embedding_layer(sentence_indices)
-    
+    print(embeddings.shape)
     # Propagate the embeddings through an LSTM layer with 128-dimensional hidden state
     # Be careful, the returned output should be a batch of sequences.
     X = LSTM(128, return_sequences=True)(embeddings)
@@ -144,9 +146,9 @@ def Emojify_V2(input_shape, word_to_vec_map, word_to_index):
     X = Dropout(0.3)(X)
     # Propagate X trough another LSTM layer with 128-dimensional hidden state
     # Be careful, the returned output should be a single hidden state, not a batch of sequences.
-    X = LSTM(128, return_sequences=False)(X)
+    last_layer = LSTM(128, return_sequences=False)(X)
     # Add dropout with a probability of 0.5
-    X = Dropout(0.3)(X)
+    X = Dropout(0.3)(last_layer)
     # Propagate X through a Dense layer with softmax activation to get back a batch of 10-dimensional vectors.
     X = Dense(classes, activation='softmax')(X)
     # Add a softmax activation
@@ -170,7 +172,11 @@ model.compile(loss='categorical_crossentropy', optimizer=customAdam, metrics=['a
 X_train_indices = sentences_to_indices(X_train, word_to_index, maxLen)
 print(Y_train[:20])
 Y_train_oh = convert_to_one_hot(Y_train, C = classes)    # C bins
-history = model.fit(X_train_indices, Y_train_oh, epochs = 2, batch_size = 512, shuffle=True)
+history = model.fit(X_train_indices, Y_train_oh, validation_split=0.1111237, epochs = 17, batch_size = 512, shuffle=True)
+
+inp = model.input                                           # input placeholder
+outputs = [model.layers[-4].output]          # all layer outputs
+functor = K.function([inp]+ [K.learning_phase()], outputs ) # evaluation function
 
 
 '''
@@ -183,14 +189,41 @@ model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy']
 #     print('Epoch', i, 'train loss', history.history['loss'][i], 'train acc', history.history['acc'][i])
 #     print('Epoch', i, 'dev loss', history.history['val_loss'][i], 'dev acc', history.history['val_acc'][i])
 
+with open('train_pred.json', 'w') as outfile:
+    json.dump(model.predict(X_train_indices).tolist(), outfile)
+
+with open('train_layers.json', 'w') as outfile:
+    layer_outs = functor([X_train_indices, 1.])
+    json.dump(layer_outs[0].tolist(), outfile)
+    print(layer_outs)
+
 X_dev_indices = sentences_to_indices(X_dev, word_to_index, max_len = maxLen)
+
+with open('dev_pred.json', 'w') as outfile:
+    json.dump(model.predict(X_dev_indices).tolist(), outfile)
+
 Y_dev_oh = convert_to_one_hot(Y_dev, C = classes)
 loss, acc = model.evaluate(X_dev_indices, Y_dev_oh)
 print()
 print("Dev loss = ", loss, "accuracy = ", acc)
 
+with open('dev_layers.json', 'w') as outfile:
+    layer_outs = functor([X_dev_indices, 1.])
+    json.dump(layer_outs[0].tolist(), outfile)
+    print(layer_outs)
+
 X_test_indices = sentences_to_indices(X_test, word_to_index, max_len = maxLen)
 Y_test_oh = convert_to_one_hot(Y_test, C = classes)
+X_test_predicted = model.predict(X_test_indices)
+
+with open('test_pred.json', 'w') as outfile:
+    json.dump(X_test_predicted.tolist(), outfile)
+
+with open('test_layers.json', 'w') as outfile:
+    layer_outs = functor([X_test_indices, 1.])
+    json.dump(layer_outs[0].tolist(), outfile)
+    print(layer_outs)
+
 loss, acc = model.evaluate(X_test_indices, Y_test_oh)
 print()
 print("Test loss = ", loss, "accuracy = ", acc)
@@ -201,7 +234,7 @@ plt.plot(history.history['val_acc'])
 plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
-plt.legend(['train', 'dev'], loc='upper left')
+plt.legend(['train'], loc='upper left')
 plt.savefig('trainacc.png')
 # summarize history for loss
 plt.figure(2)
