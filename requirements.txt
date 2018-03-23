@@ -1,0 +1,11 @@
+tensorflow>=1.5
+tabulate
+tqdm
+numpy
+keras
+matplotlib
+sklearn
+pandas
+h5py
+pydot
+graphviz
